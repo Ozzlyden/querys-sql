@@ -8,10 +8,9 @@ select * from dbamv.agenda_central;  --Agendamento paciente
 select * from dbamv.it_agenda_central;
 select * from bdamv.pw_documento_clinico; --Documento clinico (ex: obito)
 select * from dbamv.pre_med where cd_atendimento = 0301010072; --Prescricao medicia
-select * from dbamv.especialid where ds_especialid like ('%GINE%');
+select * from dbamv.especialid ;
 
-select * from dbamv.prestador where nm_prestador like ('%GABRIEL FER%');  --Pestador      ANDREA JAIME
-select * from dbasgu.usuarios where cd_usuario like('%EDIBERGNA.ALMEIDA%'); -- consultar usuario no B;
+select * from dbamv.prestador where nm_prestador like ('%THAIS DA SILVA MUNDIM%');  --Pestador      ANDREA JAIME
+select * from dbasgu.usuarios where nm_usuario like('%VIVIANE F%'); -- consultar usuario no B;
 
 select * from Eve_siasus;
-
