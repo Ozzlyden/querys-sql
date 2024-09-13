@@ -1,13 +1,13 @@
---IGESDF - Quantidade de GAE's Abertas por Turno UPAS -v2 - desenvolvimento
+--IGESDF - Quantidade de GAE's Abertas por Turno UPAS -v2
 --Acolhimento com Classificação de Risco por Cor
 SELECT
     *
 FROM
     (
         SELECT
+            b.ds_multi_empresa,
             $PgIgesdfDtInicial$ DT_IN,
             $PgIgesdfDtFim$ DT_FIM, 
-            b.ds_multi_empresa,
             nvl(COUNT(*),0) AS total,
             CASE
                 WHEN TO_DATE(to_char(a.dh_pre_atendimento, 'hh24:MI'),
