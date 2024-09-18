@@ -12,7 +12,7 @@ FROM
             c.nm_paciente                                                     AS paciente,
             fn_retorna_hr_min_seg(nvl(a.hr_alta, sysdate) - a.hr_atendimento) AS tempo_espera,
             CASE
-                WHEN a.dt_alta IS NULL THEN
+                WHEN nvl(a.dt_alta, a.dt_alta_medica ) IS NULL THEN
                     'Não'
                 ELSE
                     'Sim'
@@ -62,7 +62,7 @@ FROM
             c.nm_paciente                                                     AS paciente,
             fn_retorna_hr_min_seg(nvl(a.hr_alta, sysdate) - a.hr_atendimento) AS tempo_espera,
             CASE
-                WHEN a.dt_alta IS NULL THEN
+                WHEN nvl(a.dt_alta, a.dt_alta_medica ) IS NULL THEN
                     'Não'
                 ELSE
                     'Sim'
