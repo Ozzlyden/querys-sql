@@ -1,8 +1,7 @@
--- Painel "UPAS - VICENTE PIRES - Painel de Gestão" - Taxa de Ocupação qtf_dias_internado
 WITH periodo AS (
     SELECT 
-        TO_DATE('01/08/2024', 'DD/MM/YYYY') AS dt_inicio,
-        TO_DATE('31/08/2024', 'DD/MM/YYYY') AS dt_fim,
+        TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY') AS dt_inicio,
+        TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY') AS dt_fim,
         TO_DATE('01/08/2024', 'DD/MM/YYYY') AS data_corte -- Implementação do novo calculo
     FROM dual
 ),
@@ -15,7 +14,8 @@ leitos_oficiais AS (
             'SALA ESTABILIZACAO', 'SALA VERMELHA', 
             'SALA ISOLAMENTO', 'SALA AMARELA ISO',
             'SALA OBSERVACAO', 'SALA AMARELA', 
-            'SALA MEDICACAO', 'SALA VERDE'
+            'SALA MEDICACAO', 'SALA VERDE',
+            'SALA PEDIATRIA', 'SALA PEDIATRIA'
         ) AS unid_int,
         COUNT(*) AS leitos_oficiais
     FROM
@@ -23,7 +23,7 @@ leitos_oficiais AS (
     INNER JOIN dbamv.unid_int b ON a.cd_unid_int = b.cd_unid_int
     INNER JOIN dbamv.setor c ON b.cd_setor = c.cd_setor
     WHERE 
-        c.cd_multi_empresa IN (17) -- Filtro de empresa
+        c.cd_multi_empresa = (17) -- Filtro de empresa
         AND a.sn_extra = 'N'
         AND a.tp_situacao = 'A'
         AND (TRUNC(a.dt_desativacao) IS NULL OR TRUNC(a.dt_desativacao) > (SELECT dt_fim FROM periodo))
@@ -41,7 +41,8 @@ movimentacao_pacientes AS (
             'SALA ESTABILIZACAO', 'SALA VERMELHA', 
             'SALA ISOLAMENTO', 'SALA AMARELA ISO',
             'SALA OBSERVACAO', 'SALA AMARELA', 
-            'SALA MEDICACAO', 'SALA VERDE'
+            'SALA MEDICACAO', 'SALA VERDE',
+            'SALA PEDIATRIA', 'SALA PEDIATRIA'
         ) AS unid_int,
         COUNT(DISTINCT a.cd_atendimento) AS qtd_pacientes,
         ROUND(
@@ -59,7 +60,7 @@ movimentacao_pacientes AS (
     INNER JOIN dbamv.triagem_atendimento e ON a.cd_atendimento = e.cd_atendimento
     INNER JOIN dbamv.mov_int i ON a.cd_atendimento = i.cd_atendimento
     WHERE
-        a.cd_multi_empresa IN (17) -- Filtro de empresa
+        a.cd_multi_empresa = (17) -- Filtro de empresa
         AND a.dt_atendimento BETWEEN (SELECT dt_inicio FROM periodo) AND (SELECT dt_fim FROM periodo) + 0.99999
         AND (
             -- Antes da data_corte, aplicar filtro de cor de referência 11

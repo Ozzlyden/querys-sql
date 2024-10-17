@@ -5,7 +5,7 @@ select * from dbamv.atendime where cd_atendimento = 6199334;  --Atendimento prin
 select * from dbamv.paciente;  --Paciete
 select * from dbamv.prestador where nm_prestador like ('%MARCIA RO%') ;  --Pestador
 select * from dbasgu.usuarios where nm_usuario like('%MARCIA RO%'); --usuario
-select * from prestador_cbo where cd_prestador = 16417;
+select * from dbamv.prestador_cbo where cd_prestador = 16417;
 
 --SETORES E ESPECIALIDADES
 select * from dbamv.especialid where cd_especialid in(29, 99) ;
@@ -18,20 +18,21 @@ select * from dbamv.leito;
 select * from dbamv.unid_int;
 select * from dbamv.triagem_atendimento;
 select * from dbamv.mov_int;
-DBAMV.RETORNA_SITUACAO_DO_LEITO; --Funcação 
+DBAMV.RETORNA_SITUACAO_DO_LEITO; --Funcaï¿½ï¿½o 
 
 --DOCUMENTOS
-select * from bdamv.pw_documento_clinico; --Documento clinico (ex: obito)
+select * from dbamv.pw_documento_clinico; --Documento clinico (ex: obito)
 select * from dbamv.pre_med where cd_atendimento = 0301010072; --Prescricao medicia
 select * from dbamv.agenda_central;  --Agendamento paciente 
 select * from dbamv.it_agenda_central;
 select * from dbamv.eve_siasus; --Upas faturamento
 
-select * from SACR_CLASSIFICACAO;
-select * from SACR_COR_REFERENCIA;
 
-select * from solicitacao_os where cd_oficina = 5 and tp_situacao = 'S'; 
-select * from oficina; --cd_oficina = 5
-select * from setor;
+select * from dbamv.solicitacao_os where cd_oficina = 5 and tp_situacao = 'S'; 
+select * from dbamv.oficina; --cd_oficina = 5
+select * from dbamv.setor;
 
-select * from multi_empresas;
+select * from dbamv.multi_empresas;
+
+select * from dbamv.vwantibioticocirurgia;
+
