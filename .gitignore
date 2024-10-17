@@ -1,0 +1,11 @@
+# Ignorar todos os arquivos .log
+*.log
+
+# Ignorar a pasta build/
+build/
+
+# Ignorar arquivos específicos
+secret.txt
+.dbeaver
+.settings 
+.project
