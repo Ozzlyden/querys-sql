@@ -58,9 +58,8 @@ FROM
                                  ORDER BY
                                      a.dt_atendimento
                             )        AS row_num,
-                            round(nvl(nvl(a.hr_alta, a.hr_alta_medica),
-                                      TO_DATE($PgIgesdfDtFim$,'DD/MM/YYYY')) - a.hr_atendimento,   --Data fim
-                                  2) AS qtd_dias_internados
+                            ceil(nvl(nvl(a.hr_alta, a.hr_alta_medica),
+                                      TO_DATE($PgIgesdfDtFim$,'DD/MM/YYYY')) - a.hr_atendimento) AS qtd_dias_internados
                         FROM
                                  atendime a
                             INNER JOIN dbamv.triagem_atendimento b ON a.cd_atendimento = b.cd_atendimento

@@ -21,8 +21,8 @@ pacientes AS (
         ) AS unid_int,
         c.cd_unid_int,
         b.ds_leito,
-        ROUND(NVL(NVL(a.hr_alta, a.hr_alta_medica),
-            TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento, 2) AS qtd_dias_internados
+        CEIL(NVL(NVL(a.hr_alta, a.hr_alta_medica),
+            TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento) AS qtd_dias_internados
         /*,
         CASE 
             -- Antes da data_corte -> pacientes com triagem referência 11

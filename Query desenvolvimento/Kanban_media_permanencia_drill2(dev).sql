@@ -35,10 +35,7 @@ FROM (
             ELSE ds_mot_alt
             END ds_mot_alt,
         ROW_NUMBER() OVER (PARTITION BY a.cd_paciente ORDER BY a.dt_atendimento) AS row_num,
-        ROUND(
-        NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento, 
-        2
-      ) AS qtd_dias_internados -- Calculando os dias internados
+        CEIL(NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento) AS qtd_dias_internados -- Calculando os dias internados
         
     FROM atendime a
     INNER JOIN DBAMV.triagem_atendimento b ON a.cd_atendimento = b.cd_atendimento

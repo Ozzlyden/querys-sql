@@ -36,8 +36,8 @@ WITH resultado AS (
                                'SALA OBSERVACAO', 'SALA AMARELA', 'SALA MEDICACAO', 'SALA VERDE', 'SALA PEDIATRIA', 'SALA PEDIATRIA') AS unid_int,
                         c.cd_unid_int,
                         b.ds_leito,
-                        ROUND(NVL(NVL(a.hr_alta, a.hr_alta_medica),
-                                      TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento, 2) AS qtd_dias_internados
+                        CEIL(NVL(NVL(a.hr_alta, a.hr_alta_medica),
+                                      TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento) AS qtd_dias_internados
                     FROM
                         atendime a
                         INNER JOIN dbamv.leito b ON a.cd_leito = b.cd_leito
