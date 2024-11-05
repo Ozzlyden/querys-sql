@@ -1,13 +1,17 @@
 --pass: v371v20
 
---PACIENTE E USUARIOS
+--PACIENTE / USUARIOS / PESTADOR
 select * from dbamv.atendime where cd_atendimento IN (6336088,6290962 );  --Atendimento principal
 select * from dbamv.paciente ;  --Paciete
 select * from dbamv.prestador where nm_prestador like ('%DANIEL G%') ;  --Pestador
 select * from dbamv.tip_presta ;
 select * from dbasgu.usuarios where nm_usuario like('%MARCIA RO%'); --usuario
 select * from dbamv.prestador_cbo where cd_prestador = 16417;
+
+--AGENDAMENTO
 select * from dbamv.it_agenda_central;
+select * from dbamv.agenda_central;
+
 
 --SETORES E ESPECIALIDADES
 select * from dbamv.especialid where cd_especialid in(29, 99) ;
