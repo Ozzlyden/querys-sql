@@ -1,12 +1,15 @@
 --pass: v371v20
 
 --PACIENTE / USUARIOS / PESTADOR
-select * from dbamv.atendime where cd_atendimento IN (6336088,6290962 );  --Atendimento principal
+select * from dbamv.atendime; --DT_REVISAO, DT_RETORNO, DT_SOLIC_MEDICA, SN_EM_ATENDIMENTO, CD_TIP_SITUACAO, SN_CONSULTA_SIASUS, NR_CHAMADA_PAINEL, DT_ULTIMA_UPD_DIAG, CD_PROCEDIMENTO
+select * from dbamv.tip_mar;
+select * from dbamv.tip_ate;
 select * from dbamv.paciente ;  --Paciete
 select * from dbamv.prestador where nm_prestador like ('%DANIEL G%') ;  --Pestador
 select * from dbamv.tip_presta ;
 select * from dbasgu.usuarios where nm_usuario like('%MARCIA RO%'); --usuario
 select * from dbamv.prestador_cbo where cd_prestador = 16417;
+
 
 --AGENDAMENTO
 select * from dbamv.it_agenda_central;
@@ -29,8 +32,6 @@ select * from dbamv.mov_int;
 select * from dbamv.pw_documento_clinico; --Documento clinico (ex: obito)
 select * from dbamv.pre_med where cd_atendimento = 0301010072; --Prescricao medicia
 select * from dbamv.itpre_med;
-select * from dbamv.agenda_central;  --Agendamento paciente 
-select * from dbamv.it_agenda_central;
 select * from dbamv.eve_siasus; --Upas faturamento
 
 --ESTOQUE
