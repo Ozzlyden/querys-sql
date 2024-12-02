@@ -3,7 +3,7 @@ WITH periodo AS (
     SELECT 
         TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY') AS DT_INICIO,
         TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY') AS DT_FIM,
-        TO_DATE('01/08/2024', 'DD/MM/YYYY') AS data_corte -- Implementação do novo cálculo
+        TO_DATE('28/08/2024', 'DD/MM/YYYY') AS data_corte -- Implementação do novo cálculo
     FROM dual
 ),
 pacientes AS (
@@ -21,23 +21,8 @@ pacientes AS (
         ) AS unid_int,
         c.cd_unid_int,
         b.ds_leito,
-        CEIL(NVL(NVL(a.hr_alta, a.hr_alta_medica),
-            TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento) AS qtd_dias_internados
-        /*,
-        CASE 
-            -- Antes da data_corte -> pacientes com triagem referência 11
-            WHEN a.dt_atendimento < (SELECT data_corte FROM periodo) THEN 
-                CASE 
-                    WHEN e.cd_cor_referencia = 11 THEN 1
-                    ELSE 0
-                END
-            -- Após a data_corte -> considerar apenas pacientes em leitos
-            ELSE 
-                CASE 
-                    WHEN b.cd_leito IS NOT NULL THEN 1
-                    ELSE 0
-                END
-        END AS filtro_paciente*/
+        ROUND(NVL(NVL(a.hr_alta, a.hr_alta_medica),
+            TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento, 2) AS qtd_dias_internados
     FROM
         dbamv.atendime a
     INNER JOIN dbamv.leito b ON a.cd_leito = b.cd_leito
@@ -45,14 +30,18 @@ pacientes AS (
     INNER JOIN dbamv.paciente d ON a.cd_paciente = d.cd_paciente
     LEFT JOIN dbamv.triagem_atendimento e ON a.cd_atendimento = e.cd_atendimento
     WHERE
-        a.cd_multi_empresa IN (17) -- Filtro de empresa
-        --AND b.sn_extra = 'N'
-        --AND b.tp_situacao = 'A'
+        a.cd_multi_empresa IN (03) -- Filtro de empresa
+        --AND b.sn_extra = 'N' AND b.tp_situacao = 'A' 
+        
         AND a.dt_atendimento BETWEEN (SELECT DT_INICIO FROM periodo) AND (SELECT DT_FIM FROM periodo) + 0.99999
         AND (
-                (a.dt_atendimento < (SELECT data_corte FROM periodo) AND e.cd_cor_referencia = 11)
+                (a.dt_atendimento < (SELECT data_corte FROM periodo) AND e.cd_cor_referencia = 11 )
                 OR (a.dt_atendimento >= (SELECT data_corte FROM periodo) AND b.cd_leito IS NOT NULL)
             )
+        AND ROUND(
+                            NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento,
+                            2
+                        ) > 0
 ),
 resultado AS (
     SELECT 
@@ -65,8 +54,6 @@ resultado AS (
         ds_leito
     FROM 
         pacientes
-   -- WHERE
-        --filtro_paciente = 1 -- Aplicar o filtro conforme a regra da data de corte
 )
 
 SELECT 

@@ -2,13 +2,13 @@ WITH resultado AS (
     SELECT
         pacientes.cd_unid_int,
         unid_int,
-        qtd_pacientes,
+        CEIL(qtd_dias_internados) AS qtd_pacientes,
         leitos_oficiais,
         qtd_dias_internados,
         (TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY') - TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY')) + 1 AS dias_entre_datas,
         
         CASE 
-            WHEN TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY') < TO_DATE('01/08/2024', 'DD/MM/YYYY') THEN 
+            WHEN TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY') < TO_DATE('28/08/2024', 'DD/MM/YYYY') THEN 
                 ROUND(
                     (qtd_pacientes * 100) / (leitos_oficiais * ((TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY') - TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY')) + 1)),
                 2)
@@ -25,7 +25,7 @@ WITH resultado AS (
             SELECT
                 cd_unid_int,
                 unid_int,
-                COUNT(cd_atendimento) AS qtd_pacientes,
+                SUM(qtd_dias_internados) AS qtd_pacientes,
                 SUM(qtd_dias_internados) AS qtd_dias_internados
             FROM
                 (
@@ -45,14 +45,16 @@ WITH resultado AS (
                         INNER JOIN dbamv.paciente d ON a.cd_paciente = d.cd_paciente
                         INNER JOIN dbamv.triagem_atendimento e ON a.cd_atendimento = e.cd_atendimento
                     WHERE
-                        a.cd_multi_empresa IN (17)
-                        --AND b.sn_extra = 'N'
-                        --AND b.tp_situacao = 'A'
+                        a.cd_multi_empresa IN (03) 
+                         --AND b.sn_extra = 'N' 
+                         --AND b.tp_situacao = 'A'                  
                         AND a.dt_atendimento BETWEEN TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY') AND TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY') + 0.99999
                         AND (
-                            (a.dt_atendimento < TO_DATE('01/08/2024', 'DD/MM/YYYY') AND e.cd_cor_referencia = 11)
-                            OR (a.dt_atendimento >= TO_DATE('01/08/2024', 'DD/MM/YYYY') AND b.cd_leito IS NOT NULL)
+                            (a.dt_atendimento < TO_DATE('28/08/2024', 'DD/MM/YYYY') AND e.cd_cor_referencia = 11)
+                            OR (a.dt_atendimento >= TO_DATE('28/08/2024', 'DD/MM/YYYY') AND b.cd_leito IS NOT NULL)
                         )
+                        AND ROUND(
+                             NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento, 2) >= 0
                 ) pacientes
             GROUP BY
                 cd_unid_int,
@@ -68,7 +70,7 @@ WITH resultado AS (
                 INNER JOIN dbamv.unid_int b ON a.cd_unid_int = b.cd_unid_int
                 INNER JOIN dbamv.setor c ON b.cd_setor = c.cd_setor
             WHERE
-                c.cd_multi_empresa IN (17)
+                c.cd_multi_empresa IN (03)
                 AND a.sn_extra = 'N'
                 AND a.tp_situacao = 'A'
             GROUP BY

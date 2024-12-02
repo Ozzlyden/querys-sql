@@ -2,7 +2,7 @@ WITH periodo AS (
     SELECT 
         TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY') AS dt_inicio,
         TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY') AS dt_fim,
-        TO_DATE('01/08/2024', 'DD/MM/YYYY') AS data_corte
+        TO_DATE('28/08/2024', 'DD/MM/YYYY') AS data_corte
     FROM dual
 ),
 etapa_atendimento AS (
@@ -30,12 +30,18 @@ etapa_atendimento AS (
     LEFT JOIN dbamv.mot_alt e ON a.cd_mot_alt = e.cd_mot_alt
     LEFT JOIN dbamv.tip_res f ON a.cd_tip_res = f.cd_tip_res
     LEFT JOIN dbamv.paciente g ON a.cd_paciente = g.cd_paciente
-    WHERE a.cd_multi_empresa IN (17)
+    WHERE a.cd_multi_empresa IN (03)
+    --AND  c.sn_extra = 'N' AND  c.tp_situacao = 'A'
+    
     AND a.dt_atendimento BETWEEN (SELECT dt_inicio FROM periodo) AND (SELECT dt_fim FROM periodo) + 0.99999
     AND (
-        (a.dt_atendimento < (SELECT data_corte FROM periodo) AND b.cd_cor_referencia = 11)
+        (a.dt_atendimento < (SELECT data_corte FROM periodo) AND b.cd_cor_referencia = 11  )
         OR (a.dt_atendimento >= (SELECT data_corte FROM periodo) AND a.cd_leito IS NOT NULL)
     )
+    AND ROUND(
+                            NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento,
+                            2
+                        ) > 0
 )
 SELECT *
 FROM etapa_atendimento

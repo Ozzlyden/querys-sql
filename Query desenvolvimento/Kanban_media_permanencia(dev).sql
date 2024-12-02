@@ -11,7 +11,7 @@ SELECT
  CASE 
  -- Antes da data_corte -> qtd_atendimentos
  WHEN TO_DATE($PgIgesdfDtInicial$)   -- Data inicio
- < TO_DATE('01/08/2024') THEN 
+ < TO_DATE('28/08/2024') THEN 
  ROUND((qtd_atendimentos / total_altas), 2) 
  -- Após a data_corte -> qtd dias internados
  ELSE 
@@ -58,8 +58,9 @@ FROM
                                  ORDER BY
                                      a.dt_atendimento
                             )        AS row_num,
-                            ceil(nvl(nvl(a.hr_alta, a.hr_alta_medica),
-                                      TO_DATE($PgIgesdfDtFim$,'DD/MM/YYYY')) - a.hr_atendimento) AS qtd_dias_internados
+                            CEIL(nvl(nvl(a.hr_alta, a.hr_alta_medica),
+                                      TO_DATE($PgIgesdfDtFim$,'DD/MM/YYYY')) - a.hr_atendimento   --Data fim
+                                  ) AS qtd_dias_internados
                         FROM
                                  atendime a
                             INNER JOIN dbamv.triagem_atendimento b ON a.cd_atendimento = b.cd_atendimento
@@ -67,14 +68,21 @@ FROM
                             INNER JOIN dbamv.unid_int            d ON c.cd_unid_int = d.cd_unid_int
                             INNER JOIN dbamv.paciente            e ON a.cd_paciente = e.cd_paciente
                         WHERE
-                            a.cd_multi_empresa IN ( 17 ) 
+                            a.cd_multi_empresa IN ( 03 ) 
+                            --AND c.sn_extra = 'N' 
+                            --AND c.tp_situacao = 'A'
+                            
                             AND a.dt_atendimento BETWEEN TO_DATE($PgIgesdfDtInicial$) AND TO_DATE($PgIgesdfDtFim$) + 0.99999
                             AND (
                                 --Filtro Data Implementação
-                             ( a.dt_atendimento < TO_DATE('01/08/2024', 'DD/MM/YYYY') 
+                             ( a.dt_atendimento < TO_DATE('28/08/2024', 'DD/MM/YYYY') 
                                     AND b.cd_cor_referencia = 11 )
-                                  OR ( a.dt_atendimento >= TO_DATE('01/08/2024', 'DD/MM/YYYY') 
+                                  OR ( a.dt_atendimento >= TO_DATE('28/08/2024', 'DD/MM/YYYY') 
                                        AND c.cd_leito IS NOT NULL ) )
+                            AND ROUND(
+                            NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento,
+                                   2
+                                   ) > 0
                     ) a
                     INNER JOIN dbamv.paciente e ON a.cd_paciente = e.cd_paciente
                 GROUP BY

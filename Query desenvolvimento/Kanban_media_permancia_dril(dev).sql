@@ -2,7 +2,7 @@ WITH periodo AS (
     SELECT 
         TO_DATE($PgIgesdfDtInicial$, 'DD/MM/YYYY') AS dt_inicio,
         TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY') AS dt_fim,
-        TO_DATE('01/08/2024', 'DD/MM/YYYY') AS data_corte
+        TO_DATE('28/08/2024', 'DD/MM/YYYY') AS data_corte
     FROM dual
 )
 SELECT *
@@ -52,10 +52,12 @@ FROM (
             LEFT JOIN dbamv.tip_res e ON a.cd_tip_res = e.cd_tip_res
             LEFT JOIN dbamv.leito f ON a.cd_leito = f.cd_leito
             LEFT JOIN dbamv.unid_int g ON f.cd_unid_int = g.cd_unid_int
-            WHERE a.cd_multi_empresa IN (17)
+            WHERE a.cd_multi_empresa IN (03)
+            --AND  f.sn_extra = 'N' AND  f.tp_situacao = 'A'
+            
             AND a.dt_atendimento BETWEEN (SELECT dt_inicio FROM periodo) AND (SELECT dt_fim FROM periodo) + 0.99999
             AND (
-                (a.dt_atendimento < (SELECT data_corte FROM periodo) AND c.cd_cor_referencia = 11)
+                (a.dt_atendimento < (SELECT data_corte FROM periodo) AND c.cd_cor_referencia = 11 )
                 OR (a.dt_atendimento >= (SELECT data_corte FROM periodo) AND a.cd_leito IS NOT NULL)
             )
             ORDER BY 3

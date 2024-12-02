@@ -35,7 +35,10 @@ FROM (
             ELSE ds_mot_alt
             END ds_mot_alt,
         ROW_NUMBER() OVER (PARTITION BY a.cd_paciente ORDER BY a.dt_atendimento) AS row_num,
-        CEIL(NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento) AS qtd_dias_internados -- Calculando os dias internados
+        ROUND(
+        NVL(NVL(a.hr_alta, a.hr_alta_medica), TO_DATE($PgIgesdfDtFim$, 'DD/MM/YYYY')) - a.hr_atendimento, 
+        2
+      ) AS qtd_dias_internados -- Calculando os dias internados
         
     FROM atendime a
     INNER JOIN DBAMV.triagem_atendimento b ON a.cd_atendimento = b.cd_atendimento
@@ -44,12 +47,14 @@ FROM (
     INNER JOIN DBAMV.paciente e ON a.cd_paciente = e.cd_paciente
     LEFT JOIN DBAMV.mot_alt f ON a.cd_mot_alt = f.cd_mot_alt
     LEFT JOIN DBAMV.tip_res g ON a.cd_tip_res = g.cd_tip_res
-WHERE a.cd_multi_empresa IN (17) 
+WHERE a.cd_multi_empresa IN (03) 
+    --AND  c.sn_extra = 'N' AND  c.tp_situacao = 'A' 
+    
     AND a.dt_atendimento BETWEEN TO_DATE( $PgIgesdfDtInicial$ , 'DD/MM/YYYY') AND TO_DATE( $PgIgesdfDtFim$ )+0.99999
      AND (
         --Aplicar a lógica da data de corte
-        (a.dt_atendimento < TO_DATE('01/08/2024', 'DD/MM/YYYY') AND b.cd_cor_referencia = 11)
-        OR (a.dt_atendimento >= TO_DATE('01/08/2024', 'DD/MM/YYYY') AND a.cd_leito IS NOT NULL)
+        (a.dt_atendimento < TO_DATE('28/08/2024', 'DD/MM/YYYY') AND b.cd_cor_referencia = 11 )
+        OR (a.dt_atendimento >= TO_DATE('28/08/2024', 'DD/MM/YYYY') AND a.cd_leito IS NOT NULL)
       )
 ) a
     INNER JOIN DBAMV.paciente e ON a.cd_paciente = e.cd_paciente
