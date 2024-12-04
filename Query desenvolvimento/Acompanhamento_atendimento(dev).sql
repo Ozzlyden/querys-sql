@@ -1,16 +1,39 @@
---Painel assistencial medicamentos / HBDF - Status paciente
+--Painel Assistencial Medicamentos / HBDF - Status paciente
 SELECT
     dt_atendimento,
     dt_alta_medica,
     dt_alta,
-    cd_atendimento,
+    atend.cd_atendimento,
     nm_paciente,
     dt_nascimento,
-    consulta_status,
+    CASE
+        WHEN atend.dh_processo IS NOT NULL THEN
+            'EM ATENDIMENTO'
+        WHEN prescricao_medicacao = 'MEDICADO' OR exame_laboratorio = 'RESULTADO DISPONIVEL' THEN
+            'ATENDIMENTO REALIZADO'   
+        WHEN atend.dt_alta_medica IS NOT NULL  
+                OR atend.dt_alta IS NOT NULL THEN
+            'FINALIZADO'
+        ELSE
+            'AGUARDANDO'
+    END                         AS consulta_status,
     prescricao_medicacao,
     cd_atendime,
     exame_laboratorio,
-    retorno_consulta
+    CASE   
+         --CONSULTA DE RETORNO
+          WHEN exame_laboratorio = 'AGUARDANDO' THEN
+               'AGUARDE'
+          WHEN exame_laboratorio = 'RESULTADO DISPONIVEL' THEN
+               'DISPONIVEL'
+          WHEN atend.dt_alta_medica IS NOT NULL 
+                OR atend.dt_alta IS NOT NULL THEN
+               'ATENDIMENTO REALIZADO'
+          ELSE
+    NULL
+                                    
+    END                                     AS retorno_consulta
+
 FROM
     (
         SELECT
@@ -20,38 +43,7 @@ FROM
             a.cd_atendimento                        AS cd_atendimento,
             obter_iniciais(c.nm_paciente)           AS nm_paciente,
             to_char(c.dt_nascimento, 'dd/mm/yyyy')  AS dt_nascimento,
-            CASE
-                WHEN b.dh_processo IS NOT NULL THEN
-                    'EM ATENDIMENTO'
-                
-                WHEN a.dt_alta_medica IS NOT NULL  
-                     OR a.dt_alta IS NOT NULL THEN
-                    'FINALIZADO'
-                ELSE
-                    'AGUARDANDO'
-            END                                     AS consulta_status,
-            CASE
-                /*WHEN a.hr_agenda BETWEEN sysdate - 1 AND sysdate AND sn_em_atendimento = 'N' THEN
-                     'AGUARDANDO RETORNO'
-                WHEN a.hr_agenda BETWEEN sysdate - 1 AND sysdate AND falta = 'N' THEN
-                    'EM ATENDIMENTO'
-                WHEN hr_fim_agenda IS NOT NULL OR atendido = 'S' THEN
-                    'ATENDIMENTO REALIZADO'
-                ELSE
-                    NULL*/
-                
-                --CONSULTA DE RETORNO
-                WHEN a.dt_atendimento BETWEEN sysdate - 1 AND sysdate AND sn_em_atendimento = 'N' AND cd_tip_mar = 2 THEN
-                    'AGUARDANDO RETORNO'
-                WHEN a.dt_atendimento BETWEEN sysdate - 1 AND sysdate AND cd_tip_mar = 2 THEN
-                    'EM ATENDIMENTO'
-                WHEN a.dt_atendimento BETWEEN sysdate - 1 AND sysdate AND cd_tip_mar = 2 AND a.dt_alta_medica IS NOT NULL
-                    OR a.dt_alta IS NOT NULL THEN
-                    'ATENDIMENTO REALIZADO'
-                ELSE
-                    NULL
-                
-            END                                     AS retorno_consulta,
+            b.dh_processo,
                 
             ( 
                 SELECT
@@ -78,6 +70,7 @@ FROM
                                             cd_itpre_med,
                                             cd_tip_esq,
                                             cd_tip_presc,
+                                            --decode (cd_tip_presc, 4931, 'SIM') as retorno,
                                             a.cd_pre_med,
                                             cd_tip_fre,
                                             pre.cd_atendimento
@@ -136,22 +129,7 @@ FROM
                 FROM
                     dbamv.paciente
             )        c ON a.cd_paciente = c.cd_paciente
-            /*LEFT JOIN ( 
-                SELECT
-                    ac.cd_agenda_central,
-                    ac.cd_atendimento,
-                    ac.cd_paciente,
-                    ac.hr_agenda,
-                    ac.hr_fim,
-                    ac.sn_atendido AS atendido,
-                    agc.dt_agenda,
-                    agc.hr_inicio,
-                    agc.hr_fim AS hr_fim_agenda,
-                    agc.sn_falta AS falta
-                FROM
-                    dbamv.it_agenda_central ac
-                    INNER JOIN dbamv.agenda_central agc ON ac.cd_agenda_central = agc.cd_agenda_central
-            )       d ON a.cd_atendimento = d.cd_atendimento*/
+           
         WHERE
                 a.cd_multi_empresa = 1
             AND a.tp_atendimento = 'U'
@@ -230,5 +208,14 @@ FROM
                     ) total_itped_lab ON total_itpresc.cd_atendimento = total_itped_lab.cd_atendimento
             )
     ) exa ON atend.cd_atendimento = exa.cd_atendime
+LEFT JOIN (
+            SELECT DISTINCT a.cd_atendimento,
+            b.cd_tip_fre,
+            DECODE (b.cd_tip_presc, 4931, 'SIM') AS retorno
+            FROM pre_med a
+            INNER JOIN itpre_med b ON a.cd_pre_med = b.cd_pre_med
+            WHERE b.cd_tip_presc = 4931) retorno ON atend.cd_atendimento = retorno.cd_atendimento
 WHERE
     nvl(dt_alta_medica, dt_alta) IS NULL
+ORDER BY 
+    exame_laboratorio
