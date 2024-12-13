@@ -8,10 +8,10 @@ COUNT(CASE WHEN situacao = 1 THEN 1 END) AS tl_cns_incompletos,
 COUNT(CASE WHEN situacao = 3 THEN 3 END) AS tl_doc_completos,
 
 --SETOR e ATENDIMENTO
-SUM(CASE WHEN ds_ori_ate = 'SEM ATENDIMENTO' THEN 1 ELSE 0 END)AS tl_ate_incompletos,
-SUM(CASE WHEN ds_ser_dis = 'SEM ATENDIMENTO' THEN 1 ELSE 0 END)AS tl_ser_incompletos,
-SUM(CASE WHEN ds_ori_ate = 'SEM ATENDIMENTO' AND ds_ser_dis = 'SEM ATENDIMENTO' THEN 1 ELSE 0 END)AS tl_ate_ser_incompletos,
-SUM(CASE WHEN ds_ori_ate IS NOT NULL AND ds_ser_dis IS NOT NULL THEN 1 ELSE 0 END)AS tl_ate_ser_completo,
+/*SUM(CASE WHEN ds_ori_ate = 'SEM ATENDIMENTO' THEN 1 ELSE 0 END)AS tl_ate_incompletos,
+SUM(CASE WHEN ds_ser_dis = 'SEM ATENDIMENTO' THEN 1 ELSE 0 END)AS tl_ser_incompletos,*/
+SUM(CASE WHEN ds_ori_ate = 'SEM ATENDIMENTO' AND ds_ser_dis = 'SEM ATENDIMENTO' THEN 1 ELSE 0 END)AS tl_setor_incompletos,
+SUM(CASE WHEN ds_ori_ate != 'SEM ATENDIMENTO' AND ds_ser_dis != 'SEM ATENDIMENTO' THEN 1 ELSE 0 END)AS tl_setor_completo,
 
 --CADASTROS ALTERADOS             
 SUM(CASE WHEN cadastros_alterados = 'CADASTRO ALTERADO' THEN 1 ELSE 0 END) AS tl_cadastros_alterados,
@@ -20,21 +20,21 @@ SUM(CASE WHEN cadastros_alterados = 'INCONSISTENCIA' THEN 1 ELSE 0 END) AS tl_ca
             
 --CADASTROS ALTERADOS
 SUM(CASE WHEN situacao IN (0,1) 
-    AND ds_ori_ate IS NULL OR ds_ser_dis IS NULL
+    /*AND ds_ori_ate = 'SEM ATENDIMENTO' OR ds_ser_dis = 'SEM ATENDIMENTO'*/
     AND TRUNC (dt_cadastro_manual) != TRUNC(dt_ultima_atualizacao) THEN 1 ELSE 0 END) AS cad_alt_incompletos,
 SUM(CASE WHEN situacao = 3 
-    AND ds_ori_ate IS NOT NULL 
-    AND ds_ser_dis IS NOT NULL
+    /*AND ds_ori_ate != 'SEM ATENDIMENTO'
+    AND ds_ser_dis != 'SEM ATENDIMENTO'*/
     AND TRUNC (dt_cadastro_manual) != TRUNC(dt_ultima_atualizacao) THEN 1 ELSE 0 END) AS cad_alt_completos,
             
 --CADASTROS NAO ALTERADOS
 SUM(CASE WHEN situacao IN (0,1) 
-    AND ds_ori_ate IS NULL OR ds_ser_dis IS NULL
+    /*AND ds_ori_ate = 'SEM ATENDIMENTO' OR ds_ser_dis = 'SEM ATENDIMENTO'*/
     AND TRUNC (dt_cadastro_manual) = TRUNC(dt_ultima_atualizacao) 
-    OR dt_ultima_atualizacao IS NULL THEN 1 ELSE 0 END) AS cad_nao_alt_incompletos,
+    /*OR dt_ultima_atualizacao IS NULL*/ THEN 1 ELSE 0 END) AS cad_nao_alt_incompletos,
 SUM(CASE WHEN cadastro.situacao = 3 
-    AND ds_ori_ate IS NOT NULL 
-    AND ds_ser_dis IS NOT NULL
+    /*AND ds_ori_ate != 'SEM ATENDIMENTO'
+    AND ds_ser_dis != 'SEM ATENDIMENTO'*/
     AND TRUNC (dt_cadastro_manual) = TRUNC(dt_ultima_atualizacao) 
     OR dt_ultima_atualizacao IS NULL THEN 1 ELSE 0 END) AS cad_nao_alt_completos
 FROM(
@@ -113,7 +113,7 @@ FROM(
                     FROM
                         dbamv.paciente p
                     WHERE
-                        trunc(p.dt_cadastro_manual) BETWEEN TO_DATE('01/01/2023') AND TO_DATE('16/08/2024')
+                        trunc(p.dt_cadastro_manual) BETWEEN TO_DATE($PgIgesdfDtInicial$) AND TO_DATE($PgIgesdfDtFim$)
                         AND p.cd_multi_empresa IN ( 1, 2 )
                 ) pac
                 JOIN dbasgu.usuarios      u ON pac.nm_usuario = u.cd_usuario
@@ -133,7 +133,7 @@ FROM(
             FROM
                 dbamv.atendime
             WHERE
-                cd_multi_empresa IN ( 1, 2 )
+                cd_multi_empresa IN ( $EmpresasIGESDF$ )
             GROUP BY
                 cd_paciente
         )              min_atendimento ON paciente.cd_paciente = min_atendimento.cd_paciente
@@ -141,3 +141,5 @@ FROM(
         LEFT JOIN dbamv.ori_ate  ori ON atendime.cd_ori_ate = ori.cd_ori_ate
         LEFT JOIN dbamv.ser_dis  ser ON atendime.cd_ser_dis = ser.cd_ser_dis
     )   cadastro
+where tipoatend IN ($tpOrigemPapai$) 
+and (ds_ser_dis IN ($tpOrigemFilhote$) or ds_ori_ate IN ($tpOrigemFilhote$))

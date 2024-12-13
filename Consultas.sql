@@ -35,6 +35,11 @@ select * from dbamv.mov_int;
 select * from dbamv.pw_documento_clinico; --Documento clinico (ex: obito)
 select * from dbamv.eve_siasus; --Upas faturamento
 
+--SUPRIMENTOS
+select * from dbamv.tb_supri_medicamentos;
+select * from dbamv.tb_supri_materiais;
+
+
 --ESTOQUE
 select * from dbamv.itsolsai_pro;   
 select * from dbamv.solsai_pro;     --Solicitação saida produto
@@ -42,7 +47,7 @@ select * from dbamv.itord_pro;
 select * from dbamv.ord_com;        --Ordem de Compra
 select * from dbamv.sol_com;        --Solicitação de compra
 select * from dbamv.fornecedor;     --Fornecedor
-select * from dbamv.estoque;        --Estoque 
+select * from dbamv.estoque where /*ds_estoque like '%CAF%'*/ cd_multi_empresa in (2);        --Estoque 
 select * from dbamv.itmvto_estoque; --Movimentação Estoque
 select * from dbamv.est_pro;        --Estoque produção
 
@@ -68,4 +73,4 @@ select * from dbamv.setor;
 
 select * from dbamv.multi_empresas;
 
-
+select * from solicitacao_os where cd_os in (329302, 329301);
