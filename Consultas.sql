@@ -73,4 +73,4 @@ select * from dbamv.setor;
 
 select * from dbamv.multi_empresas;
 
-select * from solicitacao_os where cd_os in (329302, 329301);
+
